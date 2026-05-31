@@ -1,0 +1,23 @@
+{
+  "name": "bulkfb-media-download",
+  "version": "4.9.1",
+  "description": "Chrome extension to bulk-download photos from Facebook albums, profiles, groups and photo viewer carousels. Fully client-side.",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "node scripts/build-zip.js",
+    "zip": "node scripts/build-zip.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shahriar-ahmed-seam/bulkFb-media-download.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "facebook",
+    "photo-downloader",
+    "bulk-download",
+    "manifest-v3"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Bulk FB Media Download",
+  "description": "Bulk-download all photos from Facebook albums, profile photos, group photos and photo viewer carousels.",
+  "version": "4.9.1",
+  "version_name": "4.9.1",
+  "minimum_chrome_version": "103",
+  "icons": {
+    "16": "assets/icons/favicon-16.png",
+    "19": "assets/icons/favicon-19.png",
+    "32": "assets/icons/favicon-32.png",
+    "38": "assets/icons/favicon-38.png",
+    "48": "assets/icons/favicon-48.png",
+    "128": "assets/icons/favicon-128.png"
+  },
+  "action": {
+    "default_icon": "assets/icons/favicon-128.png",
+    "default_popup": "pages/popup/index.html"
+  },
+  "background": {
+    "service_worker": "background/service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": ["content/loader.js"],
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://web.facebook.com/*"
+  ],
+  "permissions": [
+    "scripting",
+    "storage",
+    "tabs",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "incognito": "not_allowed",
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*"
+      ],
+      "resources": [
+        "injects/proxy.js",
+        "injects/vendors.js",
+        "injects/app.js",
+        "injects/app.css",
+        "content/bridge.js",
+        "content/constants.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Normalize line endings: let Git decide and store LF in the repo.
+* text=auto eol=lf
+
+# Treat binary assets as binary (no EOL conversion).
+*.png binary
+*.jpg binary
+*.zip binary
+*.crx binary

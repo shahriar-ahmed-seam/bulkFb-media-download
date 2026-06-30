@@ -29,11 +29,20 @@
 }
 .ant-modal-content {
   position: relative !important;
-  background:
+  background-image:
     radial-gradient(125% 85% at 0% 0%, rgba(139, 92, 246, 0.34), transparent 58%),
     radial-gradient(120% 90% at 100% 0%, rgba(34, 211, 238, 0.2), transparent 55%),
     radial-gradient(120% 120% at 50% 130%, rgba(232, 121, 249, 0.22), transparent 60%),
-    linear-gradient(160deg, #100b22 0%, #0b0a16 58%, #08070f 100%) !important;
+    linear-gradient(
+      160deg,
+      rgba(16, 11, 34, 0.82) 0%,
+      rgba(11, 10, 22, 0.9) 58%,
+      rgba(8, 7, 15, 0.95) 100%
+    ),
+    url("../assets/img/aurora.jpg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 24px !important;
   box-shadow:

@@ -1,10 +1,11 @@
 {
-  "name": "bulkfb-media-download",
-  "version": "4.9.1",
-  "description": "Chrome extension to bulk-download photos from Facebook albums, profiles, groups and photo viewer carousels. Fully client-side.",
+  "name": "stashly",
+  "version": "1.0.0",
+  "description": "Stashly — a fully client-side Chrome (MV3) extension to bulk-download photos from Facebook albums, profile & group galleries, and the photo viewer.",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
     "build": "node scripts/build-zip.js",
     "zip": "node scripts/build-zip.js"
   },
@@ -17,7 +18,13 @@
     "facebook",
     "photo-downloader",
     "bulk-download",
+    "media-downloader",
+    "album-downloader",
     "manifest-v3"
   ],
-  "license": "MIT"
+  "author": "Shahriar Ahmed",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
 }

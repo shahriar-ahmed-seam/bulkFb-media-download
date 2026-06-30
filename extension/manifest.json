@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Bulk FB Media Download",
-  "description": "Bulk-download all photos from Facebook albums, profile photos, group photos and photo viewer carousels.",
-  "version": "4.9.1",
-  "version_name": "4.9.1",
+  "name": "Stashly — Bulk Media Downloader for Facebook",
+  "short_name": "Stashly",
+  "description": "Bulk-download photos from Facebook albums, profiles, groups and the photo viewer — saved to a folder you choose.",
+  "version": "1.0.0",
+  "version_name": "1.0.0",
   "minimum_chrome_version": "103",
+  "author": "Shahriar Ahmed",
+  "homepage_url": "https://github.com/shahriar-ahmed-seam/bulkFb-media-download",
   "icons": {
     "16": "assets/icons/favicon-16.png",
     "19": "assets/icons/favicon-19.png",
@@ -15,8 +18,10 @@
   },
   "action": {
     "default_icon": "assets/icons/favicon-128.png",
-    "default_popup": "pages/popup/index.html"
+    "default_popup": "pages/popup/index.html",
+    "default_title": "Stashly"
   },
+  "options_page": "pages/options/index.html",
   "background": {
     "service_worker": "background/service-worker-loader.js",
     "type": "module"

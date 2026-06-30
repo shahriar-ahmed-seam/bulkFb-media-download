@@ -56,10 +56,10 @@
         i = (window.require(e), n());
       !(function (e, t, i, n, s, o) {
         "use strict";
-        const a = "ESUIT | Photos Downloader for Facebook™",
+        const a = "Stashly",
           r = "download-albums-for-facebook",
           l =
-            "https://chromewebstore.google.com/detail/esuit-photos-downloader-f/djlgfdiljlmbcfimhkeenolnndblfmoo",
+            "https://github.com/shahriar-ahmed-seam/bulkFb-media-download",
           d =
             "https://www.facebook.com/permalink.php?story_fbid=pfbid02H9LG3DgtRZPzcvoSF9UWa5aaaw5aptEpygNFKLLSitodMV1mNWqzCDvG2A37wJWcl&id=61563089216213",
           u = {
@@ -92,9 +92,9 @@
             return i;
           });
         }
-        const h = "https://static-data.esuit.dev/index.json",
-          g = "https://stats.esuit.dev/index.json",
-          p = "https://esuit.dev/";
+        const h = "data:application/json,[]",
+          g = "data:application/json,[]",
+          p = "https://github.com/shahriar-ahmed-seam/bulkFb-media-download/";
         let f = [];
         const m = "mHxGWIqCotRcnLgFbr4YcdaZWDMHJlWu";
         function w(n) {
@@ -203,7 +203,7 @@
                           children: [
                             i.jsx("img", {
                               style: { width: l, height: l, display: "block" },
-                              src: `https://esuit.dev/extensions/${t.projectId}.png`,
+                              src: `https://github.com/shahriar-ahmed-seam/bulkFb-media-download/raw/main/${t.projectId}.png`,
                               alt: "",
                             }),
                             i.jsxs("div", {
@@ -3683,7 +3683,7 @@
                           new Blob([t], {
                             type: "application/json;charset=utf-8",
                           }),
-                          "ESUIT error message please send it to the developer.json",
+                          "Stashly error report.json",
                         );
                         const i = document.querySelector(`#${o}`);
                         i && (i.innerHTML = "Downloaded");
@@ -3695,10 +3695,10 @@
                       type: "primary",
                       onClick: () =>
                         window.open(
-                          "https://www.facebook.com/esuitdev",
+                          "https://github.com/shahriar-ahmed-seam/bulkFb-media-download/issues",
                           "_blank",
                         ),
-                      children: "Concat ESUIT devloper",
+                      children: "Report an issue",
                     }),
                   ],
                 }),
@@ -3754,7 +3754,7 @@
             bold: s = !0,
           } = t;
           function o() {
-            window.open(`https://docs.esuit.dev${t.linkPath}`, "_blank");
+            window.open(`https://github.com/shahriar-ahmed-seam/bulkFb-media-download${t.linkPath}`, "_blank");
           }
           return i.jsxs("span", {
             style: { lineHeight: 1, paddingBottom: 4 },
@@ -4505,7 +4505,7 @@
                       i.jsx("a", {
                         target: "_blank",
                         style: { color: "#385898" },
-                        href: "https://esuit.dev/disclaimer",
+                        href: "https://github.com/shahriar-ahmed-seam/bulkFb-media-download/blob/main/PRIVACY.md",
                         children: "Disclaimer",
                       }),
                       i.jsx("span", {
@@ -4749,7 +4749,7 @@
             createdAt: 1695526699,
             index: 8,
             uri: "https://scontent-lga3-2.cdninstagram.com/v/t51.2885-15/345242088_283736111641893782_n.jpg",
-            userName: "ESUIT.DEV",
+            userName: "Stashly",
           };
         function ci(n) {
           const { isHideQuantityCount: s = !1 } = n,
@@ -5040,7 +5040,7 @@
               "Have issues or 🐛Bug during Download?",
               " ",
               i.jsx("a", {
-                href: "https://esuit.dev/RedirectingToFBPage.html",
+                href: "https://github.com/shahriar-ahmed-seam/bulkFb-media-download",
                 target: "_blank",
                 style: { paddingRight: 8 },
                 children: "Give us feedback on Facebook",
@@ -5079,7 +5079,7 @@
                       a,
                       " not working right now.",
                       i.jsx("a", {
-                        href: "https://esuit.dev/RedirectingToFBPage.html",
+                        href: "https://github.com/shahriar-ahmed-seam/bulkFb-media-download",
                         target: "_blank",
                         style: { paddingRight: 8 },
                         children: "Give us feedback on Facebook",
@@ -5196,7 +5196,7 @@
               i.jsx("div", {
                 style: { marginLeft: 24 },
                 children: i.jsx("a", {
-                  href: "https://esuit.dev/faq",
+                  href: "https://github.com/shahriar-ahmed-seam/bulkFb-media-download#faq",
                   target: "_blank",
                   style: { fontSize: 12, color: "rgb(47, 129, 247)" },
                   children: "❓FAQ",

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stashly — Settings</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      body {
+        background:
+          radial-gradient(
+            1200px 500px at 50% -200px,
+            rgba(139, 92, 246, 0.18),
+            transparent
+          ),
+          var(--bg);
+        min-height: 100vh;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .brand__logo {
+        width: 44px;
+        height: 44px;
+      }
+      .brand__name {
+        font-size: 22px;
+      }
+      h2 {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 14px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .metric {
+        text-align: center;
+        padding: 18px 10px;
+      }
+      .metric .num {
+        font-size: 30px;
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .metric .lbl {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .row:last-child {
+        border-bottom: none;
+      }
+      .row .info strong {
+        display: block;
+        font-size: 14px;
+      }
+      .row .info span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .feature-list {
+        columns: 2;
+        gap: 24px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .feature-list li {
+        margin: 0 0 8px 18px;
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 10px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease;
+        box-shadow: var(--shadow);
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      footer {
+        text-align: center;
+        font-size: 12px;
+        color: var(--faint);
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <img class="brand__logo" src="../../assets/logo.svg" alt="Stashly" />
+          <div>
+            <div class="brand__name">Stashly</div>
+            <div class="brand__tag" id="version">Settings · v1.0.0</div>
+          </div>
+        </div>
+        <a class="btn" id="github" href="#" target="_blank" rel="noopener"
+          >View on GitHub</a
+        >
+      </header>
+
+      <section class="card">
+        <h2>Activity</h2>
+        <div class="stats-grid">
+          <div class="metric">
+            <div class="num" id="downloaded-count">—</div>
+            <div class="lbl">Files tracked</div>
+          </div>
+          <div class="metric">
+            <div class="num" id="resume-count">—</div>
+            <div class="lbl">Resume points</div>
+          </div>
+          <div class="metric">
+            <div class="num" id="status-num">●</div>
+            <div class="lbl" id="status-lbl">Status</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Maintenance</h2>
+        <div class="row">
+          <div class="info">
+            <strong>Download history</strong>
+            <span
+              >IDs of already-downloaded files, used to skip duplicates.</span
+            >
+          </div>
+          <button class="btn btn--danger" id="clear-history">Clear</button>
+        </div>
+        <div class="row">
+          <div class="info">
+            <strong>Resume points</strong>
+            <span>Saved positions so interrupted downloads can resume.</span>
+          </div>
+          <button class="btn btn--danger" id="clear-resume">Clear</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>What Stashly does</h2>
+        <ul class="feature-list">
+          <li>Bulk-download entire albums</li>
+          <li>Profile &amp; group photo galleries</li>
+          <li>Photo-viewer carousel grabs</li>
+          <li>Save straight to a chosen folder</li>
+          <li>JPG / PNG / WEBP conversion</li>
+          <li>Custom file &amp; folder names</li>
+          <li>Resume interrupted runs</li>
+          <li>Skip already-downloaded files</li>
+        </ul>
+      </section>
+
+      <footer>
+        Stashly is fully client-side — no login, no servers, no tracking.<br />
+        For personal archival use only. Respect Facebook's Terms of Service and
+        the copyright of any content you download.
+      </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="options.js"></script>
+  </body>
+</html>

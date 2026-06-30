@@ -1,5 +1,5 @@
 /**
- * Background service worker.
+ * Stashly — background service worker.
  *
  * Responsibilities:
  *   1. Remove Facebook's Content-Security-Policy headers so the MAIN-world
@@ -9,11 +9,24 @@
  *   3. Seed the per-tab window globals the UI bootstrap expects (identity +
  *      an all-unlocked feature config).
  *   4. Provide a small chrome.storage-backed message API for resume cursors,
- *      downloaded-file IDs and persisted UI settings.
+ *      downloaded-file IDs, persisted UI settings, and stats.
  *
- * This build is fully client-side: there are no remote auth, subscription or
- * telemetry calls.
+ * Fully client-side: no remote auth, subscription, or telemetry calls.
+ * All non-trivial state logic lives in ./storage-actions.js (unit tested).
  */
+
+import {
+  matchPatternToRegexFilter,
+  matchesAnyPattern,
+} from "./match-pattern.js";
+import {
+  STORAGE_KEYS,
+  appendDownloadedIds,
+  upsertResumeCursor,
+  removeResumeCursor,
+  findResumeCursor,
+  computeStats,
+} from "./storage-actions.js";
 
 const HOST_MATCHES = [
   "https://www.facebook.com/*",
@@ -22,24 +35,7 @@ const HOST_MATCHES = [
 
 const EXTENSION_SLUG = "download-albums-for-facebook";
 
-function matchPatternToRegexFilter(pattern) {
-  if (pattern === "<all_urls>") return ".*";
-  // Convert a Chrome match pattern (e.g. https://www.facebook.com/*) into a
-  // safe, anchored RE2-compatible regex. Forward slashes need no escaping.
-  const escaped = pattern.replace(/[\\^$+?.()|[\]{}]/g, "\\$&");
-  return "^" + escaped.replace(/\*/g, ".*") + "$";
-}
-
-function matchPattern(pattern, url) {
-  try {
-    if (!url) return false;
-    if (pattern === "<all_urls>") return true;
-    return new RegExp(matchPatternToRegexFilter(pattern)).test(url);
-  } catch {
-    return false;
-  }
-}
-
+// ── Per-tab window globals ──────────────────────────────────────────────────
 function getIdentityPayload() {
   const manifest = chrome.runtime.getManifest();
   return {
@@ -128,7 +124,7 @@ async function injectGlobalsIntoExistingTabs() {
 }
 
 // ── 1. CSP header removal ───────────────────────────────────────────────────
-(async () => {
+async function refreshCspRules() {
   try {
     const existing = await chrome.declarativeNetRequest.getDynamicRules();
     const removeRuleIds = existing.map((r) => r.id);
@@ -153,9 +149,9 @@ async function injectGlobalsIntoExistingTabs() {
       addRules,
     });
   } catch (err) {
-    console.warn("Failed to update CSP removal rules", err);
+    console.warn("[Stashly] Failed to update CSP removal rules", err);
   }
-})();
+}
 
 // ── 2. Content-script registration ─────────────────────────────────────────
 const CONTENT_SCRIPTS = [
@@ -176,7 +172,7 @@ const CONTENT_SCRIPTS = [
   },
 ];
 
-(async () => {
+async function registerContentScripts() {
   try {
     const registered = await chrome.scripting.getRegisteredContentScripts();
     if (registered.length > 0) {
@@ -186,32 +182,33 @@ const CONTENT_SCRIPTS = [
     }
     await chrome.scripting.registerContentScripts(CONTENT_SCRIPTS);
   } catch (err) {
-    console.warn("Failed to (re)register content scripts", err);
+    console.warn("[Stashly] Failed to (re)register content scripts", err);
   }
-})();
+}
 
-// ── 3. Seed window globals on tab load ──────────────────────────────────────
+// ── Bootstrap ───────────────────────────────────────────────────────────────
+refreshCspRules();
+registerContentScripts();
+injectGlobalsIntoExistingTabs();
+
+chrome.runtime.onInstalled.addListener(() => {
+  refreshCspRules();
+  registerContentScripts();
+  injectGlobalsIntoExistingTabs();
+});
+chrome.runtime.onStartup.addListener(() => injectGlobalsIntoExistingTabs());
+
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (
     tab?.url &&
     (changeInfo.status === "loading" || changeInfo.status === "complete") &&
-    HOST_MATCHES.some((p) => matchPattern(p, tab.url))
+    matchesAnyPattern(HOST_MATCHES, tab.url)
   ) {
     await injectGlobalsIntoTab(tabId);
   }
 });
 
-chrome.runtime.onInstalled.addListener(() => injectGlobalsIntoExistingTabs());
-chrome.runtime.onStartup.addListener(() => injectGlobalsIntoExistingTabs());
-injectGlobalsIntoExistingTabs();
-
-// ── 4. Storage-backed message API ───────────────────────────────────────────
-const STORAGE_KEYS = {
-  RESUME_CURSOR: "resumeCursor",
-  DOWNLOADED_IDS: "downloadedFilesId",
-  UI_SETTINGS: "uiMemoSettings",
-};
-
+// ── 3. Storage helpers ──────────────────────────────────────────────────────
 function getStorage(key) {
   return new Promise((resolve) => {
     chrome.storage.local.get(key, (result) => resolve(result[key]));
@@ -222,117 +219,99 @@ function setStorage(key, value) {
   return chrome.storage.local.set({ [key]: value });
 }
 
+// ── 4. Message API ──────────────────────────────────────────────────────────
+async function handleAction(action, payload = []) {
+  switch (action) {
+    // ── Lightweight persisted flags ─────────────────────────────────────────
+    case "getPersistLocalStorage": {
+      const [key, defaultValue] = payload;
+      const stored = await getStorage(key);
+      return stored === undefined ? defaultValue : stored;
+    }
+    case "setPersistLocalStorage": {
+      const [key, value] = payload;
+      await setStorage(key, value);
+      return true;
+    }
+
+    // ── Downloaded-file IDs (skip-already-downloaded feature) ───────────────
+    case "getDownloadedFilesId":
+      return (await getStorage(STORAGE_KEYS.DOWNLOADED_IDS)) || [];
+    case "appendDownloadedFilesId": {
+      const [ids] = payload;
+      const current = (await getStorage(STORAGE_KEYS.DOWNLOADED_IDS)) || [];
+      await setStorage(STORAGE_KEYS.DOWNLOADED_IDS, appendDownloadedIds(current, ids));
+      return true;
+    }
+    case "clearDownloadedFilesId":
+      await setStorage(STORAGE_KEYS.DOWNLOADED_IDS, []);
+      return true;
+
+    // ── Resume cursors ───────────────────────────────────────────────────────
+    case "setResumeCursor": {
+      const [entry] = payload;
+      if (!entry?.collectionToken) return false;
+      const cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSORS)) || [];
+      await setStorage(STORAGE_KEYS.RESUME_CURSORS, upsertResumeCursor(cursors, entry));
+      return true;
+    }
+    case "getResumeCursor": {
+      const [token] = payload;
+      const cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSORS)) || [];
+      return findResumeCursor(cursors, token);
+    }
+    case "removeResumeCursor": {
+      const [token] = payload;
+      const cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSORS)) || [];
+      await setStorage(STORAGE_KEYS.RESUME_CURSORS, removeResumeCursor(cursors, token));
+      return true;
+    }
+    case "listResumeCursors":
+      return (await getStorage(STORAGE_KEYS.RESUME_CURSORS)) || [];
+    case "clearResumeCursors":
+      await setStorage(STORAGE_KEYS.RESUME_CURSORS, []);
+      return true;
+
+    // ── Persisted UI settings ────────────────────────────────────────────────
+    case "getUIMemoSettings":
+      return (await getStorage(STORAGE_KEYS.UI_SETTINGS)) || null;
+    case "setUIMemoSettings": {
+      const [settings] = payload;
+      await setStorage(STORAGE_KEYS.UI_SETTINGS, settings);
+      return true;
+    }
+
+    // ── Stats (consumed by the options page) ─────────────────────────────────
+    case "getStats": {
+      const downloadedIds = (await getStorage(STORAGE_KEYS.DOWNLOADED_IDS)) || [];
+      const cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSORS)) || [];
+      return computeStats({ downloadedIds, cursors });
+    }
+
+    // ── No-ops (former pricing / telemetry hooks) ────────────────────────────
+    case "visitPricingPage":
+    case "visitPricing":
+    case "visitDashboard":
+    case "sentry":
+    case "consumeFeatureTreeTry":
+    case "consumeFeatureFreeTryByCount":
+    case "consumeFeaturesTreeTryByMemoUIConfigs":
+      return true;
+
+    default:
+      return null;
+  }
+}
+
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-  const { action, payload } = request;
-
-  (async () => {
-    try {
-      let result;
-      switch (action) {
-        // ── Lightweight persisted flags ──────────────────────────────────────
-        case "getPersistLocalStorage": {
-          const [key, defaultValue] = payload;
-          const stored = await getStorage(key);
-          result = stored === void 0 ? defaultValue : stored;
-          break;
-        }
-        case "setPersistLocalStorage": {
-          const [key, value] = payload;
-          await setStorage(key, value);
-          result = true;
-          break;
-        }
-
-        // ── Downloaded-file IDs (skip-already-downloaded feature) ────────────
-        case "getDownloadedFilesId": {
-          result = (await getStorage(STORAGE_KEYS.DOWNLOADED_IDS)) || [];
-          break;
-        }
-        case "appendDownloadedFilesId": {
-          const [ids] = payload;
-          let current = (await getStorage(STORAGE_KEYS.DOWNLOADED_IDS)) || [];
-          if (current.length > 300000) current = [];
-          current.push(...ids);
-          await setStorage(STORAGE_KEYS.DOWNLOADED_IDS, current);
-          result = true;
-          break;
-        }
-        case "clearDownloadedFilesId": {
-          await setStorage(STORAGE_KEYS.DOWNLOADED_IDS, []);
-          result = true;
-          break;
-        }
-
-        // ── Resume cursors ───────────────────────────────────────────────────
-        case "setResumeCursor": {
-          const [entry] = payload;
-          if (!entry?.collectionToken) {
-            result = false;
-            break;
-          }
-          let cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSOR)) || [];
-          const idx = cursors.findIndex(
-            (c) => c.collectionToken === entry.collectionToken,
-          );
-          const record = {
-            ...entry,
-            lastUpdateAt: Math.floor(Date.now() / 1000),
-          };
-          if (idx >= 0) cursors[idx] = record;
-          else cursors.push(record);
-          await setStorage(STORAGE_KEYS.RESUME_CURSOR, cursors);
-          result = true;
-          break;
-        }
-        case "getResumeCursor": {
-          const [token] = payload;
-          const cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSOR)) || [];
-          result = cursors.find((c) => c.collectionToken === token) || null;
-          break;
-        }
-        case "removeResumeCursor": {
-          const [token] = payload;
-          let cursors = (await getStorage(STORAGE_KEYS.RESUME_CURSOR)) || [];
-          cursors = cursors.filter((c) => c.collectionToken !== token);
-          await setStorage(STORAGE_KEYS.RESUME_CURSOR, cursors);
-          result = true;
-          break;
-        }
-
-        // ── Persisted UI settings ────────────────────────────────────────────
-        case "getUIMemoSettings": {
-          result = (await getStorage(STORAGE_KEYS.UI_SETTINGS)) || null;
-          break;
-        }
-        case "setUIMemoSettings": {
-          const [settings] = payload;
-          await setStorage(STORAGE_KEYS.UI_SETTINGS, settings);
-          result = true;
-          break;
-        }
-
-        // ── No-ops (former pricing / telemetry hooks) ────────────────────────
-        case "visitPricingPage":
-        case "visitPricing":
-        case "visitDashboard":
-        case "sentry":
-        case "consumeFeatureTreeTry":
-        case "consumeFeatureFreeTryByCount":
-        case "consumeFeaturesTreeTryByMemoUIConfigs":
-          result = true;
-          break;
-
-        default:
-          result = null;
-      }
-      sendResponse({ status: "success", result });
-    } catch (err) {
+  const { action, payload } = request || {};
+  handleAction(action, payload)
+    .then((result) => sendResponse({ status: "success", result }))
+    .catch((err) =>
       sendResponse({
         status: "error",
         errorMessage: err instanceof Error ? err.message : String(err),
-      });
-    }
-  })();
-
+      }),
+    );
   return true; // keep the channel open for the async response
 });

@@ -3,81 +3,127 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bulk FB Media Download</title>
+    <title>Stashly</title>
+    <link rel="stylesheet" href="../styles.css" />
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
       body {
-        width: 280px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #18191a;
-        color: #e4e6eb;
+        width: 320px;
       }
-      .header {
+      .top {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 14px 16px;
-        border-bottom: 1px solid #3a3b3c;
+        justify-content: space-between;
+        padding: 16px;
+        background: linear-gradient(
+          180deg,
+          rgba(139, 92, 246, 0.12),
+          transparent
+        );
+        border-bottom: 1px solid var(--border);
       }
-      .header img {
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
+      .body {
+        padding: 14px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
       }
-      .header-text h1 {
+      .status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .status-row .label {
         font-size: 13px;
         font-weight: 600;
       }
-      .header-text span {
-        font-size: 11px;
-        color: #8a8d91;
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
       }
-      .status {
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .stat {
+        text-align: center;
+        padding: 12px 8px;
+      }
+      .stat .num {
+        font-size: 20px;
+        font-weight: 800;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .stat .lbl {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+      .footer {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
-      }
-      .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #31a24c;
-        box-shadow: 0 0 6px #31a24c;
-        flex-shrink: 0;
-      }
-      .status p {
-        font-size: 12px;
-        color: #b0b3b8;
-      }
-      .howto {
-        padding: 0 16px 14px;
+        justify-content: space-between;
+        padding-top: 4px;
         font-size: 11px;
-        color: #8a8d91;
-        line-height: 1.5;
+      }
+      .footer a {
+        color: var(--muted);
       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <img id="icon" src="/assets/icons/favicon-48.png" alt="icon" />
-      <div class="header-text">
-        <h1>Bulk FB Media Download</h1>
-        <span id="version">v4.9.1</span>
+    <div class="top">
+      <div class="brand">
+        <img class="brand__logo" src="../../assets/logo.svg" alt="Stashly" />
+        <div>
+          <div class="brand__name">Stashly</div>
+          <div class="brand__tag" id="version">v1.0.0</div>
+        </div>
+      </div>
+      <span class="pill pill--warn" id="status">
+        <span class="dot"></span><span id="status-text">Checking…</span>
+      </span>
+    </div>
+
+    <div class="body">
+      <div class="card" id="hint-card">
+        <p class="hint" id="hint">
+          Open a Facebook album, profile photos, or group photos page — the
+          Stashly download button appears automatically.
+        </p>
+      </div>
+
+      <div class="card stats">
+        <div class="stat">
+          <div class="num" id="downloaded-count">—</div>
+          <div class="lbl">Files tracked</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="resume-count">—</div>
+          <div class="lbl">Resume points</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn--primary btn--block" id="open-fb">
+          Open Facebook
+        </button>
+        <button class="btn" id="open-options" title="Settings">⚙</button>
+      </div>
+
+      <div class="footer">
+        <a id="github" href="#" target="_blank" rel="noopener">GitHub</a>
+        <span class="faint">Personal use • respect copyright</span>
       </div>
     </div>
-    <div class="status">
-      <div class="dot"></div>
-      <p>Extension active on Facebook</p>
-    </div>
-    <div class="howto">
-      Navigate to a Facebook album, profile photos, or group photos page — the
-      download button appears automatically.
-    </div>
+
     <script src="popup.js"></script>
   </body>
 </html>

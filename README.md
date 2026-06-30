@@ -1,136 +1,114 @@
-# Bulk FB Media Download
+<div align="center">
 
-A Chrome (Manifest V3) extension that bulk-downloads photos from Facebook
-albums, profile photo collections, group photo galleries, and the photo-viewer
-carousel — straight to a folder you choose on disk.
+<img src="extension/assets/logo.svg" width="84" alt="Stashly logo" />
 
-This build is **fully client-side**. There is no login, no subscription check,
-no telemetry, and no remote server dependency. Every feature is unlocked.
+# Stashly
 
-> **Disclaimer**: This project is for educational and personal-archival use.
-> You are responsible for complying with Facebook's Terms of Service and with
-> the copyright of any content you download. Only download media you have the
-> right to.
+**Bulk media downloader for Facebook — albums, profiles, groups & the photo viewer.**
 
----
+Save entire Facebook photo collections straight to a folder on disk, in one click.
+Fully client-side: no login, no servers, no tracking.
 
-## Features
+[![CI](https://github.com/shahriar-ahmed-seam/bulkFb-media-download/actions/workflows/ci.yml/badge.svg)](https://github.com/shahriar-ahmed-seam/bulkFb-media-download/actions/workflows/ci.yml)
+![Manifest V3](https://img.shields.io/badge/Manifest-V3-8b5cf6)
+![Chrome 103+](https://img.shields.io/badge/Chrome-103%2B-6366f1)
+![License: MIT](https://img.shields.io/badge/License-MIT-34d399)
 
-- Download an entire album, profile photo set, or group photo gallery in one click
-- Download every photo in the photo-viewer carousel
-- Save directly to a chosen folder via the File System Access API (no zip step)
-- Optional format conversion (JPG / PNG / WEBP)
-- Custom file-name and folder-name templates
-- Resume interrupted downloads
-- Skip already-downloaded files
-- Optional `.caption.txt` sidecar files
-- Configurable per-request delay to stay gentle on Facebook's rate limits
+</div>
 
 ---
 
-## How it works
+> [!IMPORTANT]
+> **For personal archival use only.** You are responsible for complying with
+> Facebook's Terms of Service and the copyright of any content you download.
+> Only download media you have the right to. See [disclaimer](#disclaimer).
 
-The extension does **not** scrape the DOM or simulate scrolling. Instead it
-piggybacks on Facebook's own Relay/GraphQL infrastructure from the page's MAIN
-world:
+## ✨ Features
 
-1. `injects/proxy.js` (at `document_start`) hooks Facebook's `__d` module
-   loader and exposes the Relay store.
-2. `injects/vendors.js` + `injects/app.js` (at `document_end`) render the UI
-   and drive the download pipeline, reusing Facebook's internal `XHRRequest`
-   module so requests carry the user's existing session.
-3. The background service worker strips Facebook's CSP headers (so the injected
-   MAIN-world scripts can run) and provides a small `chrome.storage`-backed API
-   for resume cursors, downloaded-file IDs, and saved UI settings.
+- **Whole-album downloads** — grab an entire album, profile photo set, or group gallery in one click
+- **Carousel grabs** — pull every photo from the Facebook photo viewer
+- **Direct-to-disk** — saves to a folder you pick via the File System Access API (no zip step)
+- **Format conversion** — export as JPG, PNG, or WEBP
+- **Custom naming** — file-name and folder-name templates
+- **Resume** — interrupted downloads pick up where they left off
+- **Skip duplicates** — remembers already-downloaded files
+- **Captions** — optional `.caption.txt` sidecar files
+- **Gentle mode** — configurable per-request delay to respect rate limits
+- **Private by design** — everything runs locally; the extension makes zero calls to any first-party server
 
-See [docs/architecture.md](docs/architecture.md) for the full breakdown.
+## 🚀 Install (from source)
 
----
-
-## Project structure
-
-```
-bulkFb-media-download/
-├── extension/                  # the loadable / releasable extension
-│   ├── manifest.json
-│   ├── background/
-│   │   ├── service-worker-loader.js   # module entry referenced by manifest
-│   │   └── service-worker.js          # CSP removal, script registration, storage API
-│   ├── content/
-│   │   ├── loader.js                  # ISOLATED-world content-script entry
-│   │   ├── bridge.js                  # relays runtime messages to the page
-│   │   └── constants.js               # shared slug / host constants
-│   ├── injects/
-│   │   ├── proxy.js                   # MAIN-world __d loader hook (document_start)
-│   │   ├── vendors.js                 # bundled Ant Design / lodash / dayjs
-│   │   ├── app.js                     # main UI + download engine (document_end)
-│   │   └── app.css
-│   ├── pages/popup/                   # toolbar popup
-│   └── assets/icons/                  # extension icons
-├── docs/                       # reverse-engineering & architecture notes
-├── scripts/build-zip.js        # produces a store-ready zip
-└── package.json
-```
-
----
-
-## Install (development)
-
-1. Clone this repo.
+1. Download the latest `stashly-vX.Y.Z.zip` from [Releases](https://github.com/shahriar-ahmed-seam/bulkFb-media-download/releases) and unzip it — **or** clone this repo.
 2. Open `chrome://extensions` in Chrome (or any Chromium browser).
 3. Enable **Developer mode** (top-right).
-4. Click **Load unpacked** and select the `extension/` folder.
-5. Open Facebook, navigate to an album / profile photos / group photos page.
-   The download button appears automatically.
+4. Click **Load unpacked** and select the `extension/` folder (the one containing `manifest.json`).
+5. Open Facebook, go to an album / profile photos / group photos page — the **Stashly** button appears automatically.
 
-> Requires Chrome 103+ for the File System Access API and MV3 dynamic content
-> scripts.
+> Requires Chrome 103+ for the File System Access API and MV3 dynamic content scripts.
 
----
+## 🖱️ Usage
 
-## Build a release zip
+1. Navigate to a Facebook album, a profile's photos, a group's photos, or open a photo in the viewer.
+2. Click the **Stashly** download button that appears in the page.
+3. Choose options (format, naming, delay, resume…), then pick a destination folder.
+4. Let it run — progress shows inline, and you can stop any time.
 
-```bash
-npm run build
-```
+The toolbar **popup** shows live status and stats; the **options page** lets you
+review activity and clear download history or resume points.
 
-This packages the contents of `extension/` into
-`dist/bulkfb-media-download-v<version>.zip`, ready to upload to the Chrome Web
-Store or attach to a GitHub release. The script uses your platform's built-in
-zip tooling, so there are no install steps.
+## 🛠️ Development
 
----
-
-## Releasing on GitHub
+No build step is needed to run the extension — `extension/` loads directly as an
+unpacked extension. Tooling is dependency-free (Node built-ins only).
 
 ```bash
-git init
-git add .
-git commit -m "Initial release: v4.9.1"
-git branch -M main
-git remote add origin https://github.com/shahriar-ahmed-seam/bulkFb-media-download.git
-git push -u origin main
+npm test       # run the unit + integrity test suite (Node's built-in runner)
+npm run build  # package extension/ into dist/stashly-v<version>.zip
 ```
 
-Then create a tagged release and attach the zip from `dist/`:
+The non-trivial background logic lives in pure, `chrome`-free modules
+(`background/match-pattern.js`, `background/storage-actions.js`) so it can be
+unit-tested in plain Node. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-```bash
-npm run build
-git tag v4.9.1
-git push origin v4.9.1
-# upload dist/bulkfb-media-download-v4.9.1.zip to the GitHub release
+## 📦 Project structure
+
+```
+.
+├── extension/            # the loadable / releasable extension
+│   ├── manifest.json
+│   ├── background/       # service worker + pure logic modules
+│   ├── content/          # ISOLATED-world bridge
+│   ├── injects/          # MAIN-world proxy + UI + download engine
+│   ├── pages/            # popup & options UI
+│   └── assets/           # icons + logo
+├── tests/                # node:test suite
+├── scripts/build-zip.js  # release packager
+├── docs/ARCHITECTURE.md
+└── .github/workflows/    # CI + release automation
 ```
 
----
+## ❓ FAQ
 
-## Limitations & fragility
+**Is my data sent anywhere?** No. Stashly has no backend. Downloads use your own
+authenticated Facebook session and the File System Access API. See [PRIVACY.md](PRIVACY.md).
 
-This extension depends on Facebook's internal module and component names
-(`XHRRequest`, `CometAlbumPhotoCollage`, etc.) and on GraphQL `doc_id`s. When
-Facebook changes those, downloads can break until the relevant identifiers are
-updated. See [docs/architecture.md](docs/architecture.md) §15 for details.
+**Why does it need to remove CSP headers?** Facebook's Content-Security-Policy
+blocks injected scripts. Stashly removes it only on `facebook.com` so its UI can run.
 
----
+**The download button disappeared / errors out.** Facebook frequently changes its
+internal module and GraphQL identifiers, which this kind of tool depends on. Updates
+may be required when that happens — please [open an issue](https://github.com/shahriar-ahmed-seam/bulkFb-media-download/issues).
+
+**Will this be on the Chrome Web Store?** Possibly, but not guaranteed — extensions
+that modify Facebook and remove CSP headers carry review risk. For now, install from source.
+
+## Disclaimer
+
+Stashly is an independent, fully client-side tool intended for downloading media
+you own or have permission to download, for personal archival purposes. It is not
+affiliated with, endorsed by, or sponsored by Meta or Facebook. "Facebook" is a
+trademark of Meta Platforms, Inc. Use of this software may be subject to
+Facebook's Terms of Service; you are solely responsible for how you use it.
 
 ## License
 

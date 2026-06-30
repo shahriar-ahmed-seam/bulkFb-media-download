@@ -1,3 +1,47 @@
+/*
+ * Stashly — accent theme for the injected in-page UI.
+ *
+ * The download UI is rendered with Ant Design. Facebook itself does not use
+ * Ant Design, so these overrides only affect Stashly's own components on the
+ * page. Kept conservative so a Facebook layout change can't be affected.
+ */
+
+:root {
+  --stashly-accent: #8b5cf6;
+  --stashly-accent-2: #6366f1;
+}
+
+/* Square checkbox tick (original behaviour). */
 .ant-checkbox-inner:after {
   border-radius: 0 !important;
+}
+
+/* Primary buttons use the Stashly gradient. */
+.ant-btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--stashly-accent),
+    var(--stashly-accent-2)
+  ) !important;
+  border-color: var(--stashly-accent) !important;
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35) !important;
+}
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  filter: brightness(1.08);
+}
+
+/* Checked controls adopt the accent. */
+.ant-checkbox-checked .ant-checkbox-inner,
+.ant-radio-checked .ant-radio-inner {
+  background-color: var(--stashly-accent) !important;
+  border-color: var(--stashly-accent) !important;
+}
+.ant-switch-checked {
+  background: var(--stashly-accent) !important;
+}
+
+/* Links / spinners pick up the accent tone. */
+.ant-btn-link {
+  color: var(--stashly-accent) !important;
 }
